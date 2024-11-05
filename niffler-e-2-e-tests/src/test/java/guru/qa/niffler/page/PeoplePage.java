@@ -6,7 +6,8 @@ import com.codeborne.selenide.SelenideElement;
 import org.openqa.selenium.By;
 
 import static com.codeborne.selenide.Condition.*;
-import static com.codeborne.selenide.Selenide.*;
+import static com.codeborne.selenide.Selenide.$;
+import static com.codeborne.selenide.Selenide.$$;
 
 public class PeoplePage {
 
@@ -24,34 +25,25 @@ public class PeoplePage {
     private final SelenideElement previousPageButton = $("#page-prev");
     private final SelenideElement nextPageButton = $("#page-next");
     private final ElementsCollection friendsList = $$("#friends .MuiTableRow-root");
-    private final ElementsCollection friendRequestsList = $$("#requests .MuiTableRow-root");
+    private final ElementsCollection friendsNamesList = $$("#friends .MuiTableRow-root p.MuiTypography-body1");
+    private final ElementsCollection friendRequestNamesList = $$("#requests .MuiTableRow-root p.MuiTypography-body1");
     private final SelenideElement friendsListTable = $("#friends");
     private final SelenideElement friendRequestsListTable = $("#requests");
     private final SelenideElement noUsersText = $$("p.MuiTypography-root").findBy(exactText("There are no users yet"));
-    private final ElementsCollection allPeopleList = $$("#all .MuiTableRow-root");
+    private final ElementsCollection allPeopleNamesList = $$("#all .MuiTableRow-root p.MuiTypography-body1");
     private final SelenideElement waitingLabel = $("span.MuiChip-label:contains('Waiting...')");
     private final SelenideElement loadingSpinner = $("div.MuiCircularProgress-root");
 
     public PeoplePage checkThatFriendPresentInFriendsList(String name) {
         loadingSpinner.shouldNotBe(visible);
-        friendsList.stream()
-                .filter(r -> r.find(By.cssSelector("p"))
-                        .getText()
-                        .equals(name))
-                .findFirst()
-                .ifPresentOrElse(
-                        r -> {
-                            r.$("p.MuiTypography-root.MuiTypography-body1")
-                                    .shouldBe(visible)
-                                    .shouldHave(exactText(name));
-                            r.$$("button").findBy(exactText(UNFRIEND_BUTTON_TEXT))
-                                    .shouldBe(visible)
-                                    .shouldBe(enabled);
-                        },
-                        () -> {
-                            throw new AssertionError("Friend not found: " + name);
-                        }
-                );
+
+        friendsNamesList.findBy(exactText(name))
+                .shouldBe(visible)
+                .closest("tr")
+                .find(By.tagName("button"))
+                .shouldHave(exactText(UNFRIEND_BUTTON_TEXT))
+                .shouldBe(visible).shouldBe(enabled);
+
         return this;
     }
 
@@ -62,36 +54,22 @@ public class PeoplePage {
     }
 
     public PeoplePage checkThatFriendsListIsEmpty() {
-        friendsListTable.shouldNot(Condition.exist);
-        noUsersText.shouldBe(Condition.visible);
+        friendsListTable.shouldNot(exist);
+        noUsersText.shouldBe(visible);
         return this;
     }
 
     public PeoplePage checkThatIncomingRequestPresentInFriendsList(String user) {
 
-        // The only solution I was able to find
-        // that works with STRICT search by username.
-        // friendRequestsList.find(exactText(name)) doesn't work for me
-        friendRequestsList.stream()
-                .filter(r -> r.find(By.cssSelector("p"))
-                        .getText()
-                        .equals(user))
-                .findFirst()
-                .ifPresentOrElse(
-                        r -> {
-                            r.$("p.MuiTypography-root.MuiTypography-body1").shouldBe(visible)
-                                    .shouldHave(exactText(user));
-                            r.$$("button").findBy(exactText(ACCEPT_BUTTON_TEXT))
-                                    .shouldBe(visible)
-                                    .shouldBe(enabled);
-                            r.$$("button").findBy(exactText(DECLINE_BUTTON_TEXT))
-                                    .shouldBe(visible)
-                                    .shouldBe(enabled);
-                        },
-                        () -> {
-                            throw new AssertionError("Incoming request not found for user: " + user);
-                        }
-                );
+        friendRequestNamesList.findBy(exactText(user))
+                .shouldBe(visible)
+                .closest("tr")
+                .findAll(By.tagName("button"))
+                .find(exactText(ACCEPT_BUTTON_TEXT))
+                .shouldBe(visible).shouldBe(enabled)
+                .sibling(0)
+                .shouldHave(exactText(DECLINE_BUTTON_TEXT))
+                .shouldBe(visible).shouldBe(enabled);
         return this;
     }
 
@@ -102,22 +80,12 @@ public class PeoplePage {
     }
 
     public void checkThatOutgoingRequestPresentInAllPeoplesList(String user) {
-        allPeopleList.stream()
-                .filter(r -> r.find(By.cssSelector("p"))
-                        .getText()
-                        .equals(user))
-                .findFirst()
-                .ifPresentOrElse(
-                        r -> {
-                            r.$("p.MuiTypography-root.MuiTypography-body1")
-                                    .shouldBe(visible)
-                                    .shouldHave(exactText(user));
-                            r.$$("span.MuiChip-label").findBy(text(WAITING_LABEL_TEXT))
-                                    .shouldBe(visible);
-                        },
-                        () -> {
-                            throw new AssertionError("Outgoing request not found for user: " + user);
-                        }
-                );
+
+        allPeopleNamesList.findBy(exactText(user))
+                .shouldBe(visible)
+                .closest("tr")
+                .find(By.cssSelector("span.MuiChip-label"))
+                .shouldHave(exactText(WAITING_LABEL_TEXT))
+                .shouldBe(visible);
     }
 }
