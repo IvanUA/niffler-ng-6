@@ -3,6 +3,7 @@ package guru.qa.niffler.service;
 import guru.qa.niffler.config.Config;
 import guru.qa.niffler.data.dao.impl.CategoryDaoJdbc;
 import guru.qa.niffler.data.dao.impl.SpendDaoJdbc;
+import guru.qa.niffler.data.dao.impl.SpendDaoSpringJdbc;
 import guru.qa.niffler.data.entity.spend.CategoryEntity;
 import guru.qa.niffler.data.entity.spend.SpendEntity;
 import guru.qa.niffler.model.CategoryJson;
@@ -13,6 +14,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static guru.qa.niffler.data.Databases.dataSource;
 import static guru.qa.niffler.data.Databases.transaction;
 
 public class SpendDbClient {
@@ -63,15 +65,31 @@ public class SpendDbClient {
         );
     }
 
-    public Optional<List<SpendJson>> findSpendByUsername(String username) {
+    public Optional<List<SpendJson>> findSpendingByUsername(String username) {
         return transaction(
                 connection -> {
-                    return Optional.of(new SpendDaoJdbc(connection).findAllByUsername(username).stream()
-                            .map(SpendJson::fromEntity)
-                            .collect(Collectors.toList()));
+                    Optional<List<SpendEntity>> spendEntities = new SpendDaoJdbc(connection)
+                            .findAllByUsername(username);
+                    return spendEntities.map(spending ->
+                            spending.stream()
+                                    .map(SpendJson::fromEntity)
+                                    .collect(Collectors.toList())
+                    );
                 },
                 CFG.spendJdbcUrl(),
                 Connection.TRANSACTION_READ_COMMITTED
+        );
+    }
+
+    public Optional<List<SpendJson>> findAllSpending() {
+
+        Optional<List<SpendEntity>> allSpending = new SpendDaoSpringJdbc(dataSource(CFG.spendJdbcUrl()))
+                .findAll();
+
+        return allSpending.map(spending ->
+                spending.stream()
+                        .map(SpendJson::fromEntity)
+                        .toList()
         );
     }
 }
