@@ -12,8 +12,8 @@ import guru.qa.niffler.model.UserJson;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.sql.Connection;
 import java.util.Optional;
-import java.util.UUID;
 
 import static guru.qa.niffler.data.Databases.*;
 
@@ -21,7 +21,6 @@ public class UserDbClient {
 
     private static final Config CFG = Config.getInstance();
     private static final PasswordEncoder pe = PasswordEncoderFactories.createDelegatingPasswordEncoder();
-    private static UUID userId = null;
 
     public UserJson createUser(UserJson user) {
         return transaction(
@@ -32,14 +31,14 @@ public class UserDbClient {
                     );
                 },
                 CFG.userdataJdbcUrl(),
-                2
+                Connection.TRANSACTION_READ_COMMITTED
         );
     }
 
     public UserJson xaCreateUser(UserJson user) {
         return UserJson.fromEntity(
                 xaTransaction(
-                        4,
+                        Connection.TRANSACTION_REPEATABLE_READ,
                         new XaFunction<>(
                                 connection -> {
                                     AuthUserEntity authUserEntity = new AuthUserEntity();
@@ -51,8 +50,6 @@ public class UserDbClient {
                                     authUserEntity.setCredentialsNonExpired(true);
                                     new AuthUserDaoJdbc(connection).createUser(authUserEntity);
 
-                                    // ? Подсмотрено в решении - там это сделано очень красиво с помощью Arrays.stream
-                                    // Скилов не хватило, чтобы сделать аналогично, поэтому сделал в лоб.
                                     AuthorityEntity[] authorities = new AuthorityEntity[Authority.values().length];
                                     for (int i = 0; i < Authority.values().length; i++) {
                                         AuthorityEntity ae = new AuthorityEntity();
@@ -62,10 +59,6 @@ public class UserDbClient {
                                     }
                                     new AuthAuthorityDaoJdbc(connection).createAuthorities(authorities);
 
-                                    // ? Не уверен, что это правильно. А если методы надо будет вызывать в другом порядке?
-                                    // Надо делать конструктор с параметром?
-                                    userId = authUserEntity.getId();
-
                                     return null;
                                 },
                                 CFG.authJdbcUrl()
@@ -73,7 +66,6 @@ public class UserDbClient {
                         new XaFunction<>(
                                 connection -> {
                                     UserEntity ue = new UserEntity();
-                                    ue.setId(userId);
                                     ue.setUsername(user.username());
                                     ue.setCurrency(user.currency());
                                     ue.setFirstname(user.firstname());
@@ -94,7 +86,7 @@ public class UserDbClient {
                     return new UserdataUserDaoJdbc(connection).findByUsername(username).map(UserJson::fromEntity);
                 },
                 CFG.userdataJdbcUrl(),
-                2
+                Connection.TRANSACTION_READ_COMMITTED
         );
     }
 

@@ -8,7 +8,9 @@ import guru.qa.niffler.data.entity.spend.SpendEntity;
 import guru.qa.niffler.model.CategoryJson;
 import guru.qa.niffler.model.SpendJson;
 
+import java.sql.Connection;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static guru.qa.niffler.data.Databases.transaction;
@@ -31,7 +33,7 @@ public class SpendDbClient {
                     );
                 },
                 CFG.spendJdbcUrl(),
-                2
+                Connection.TRANSACTION_READ_COMMITTED
         );
     }
 
@@ -44,7 +46,7 @@ public class SpendDbClient {
                     );
                 },
                 CFG.spendJdbcUrl(),
-                2
+                Connection.TRANSACTION_READ_COMMITTED
         );
     }
 
@@ -57,19 +59,19 @@ public class SpendDbClient {
                     );
                 },
                 CFG.spendJdbcUrl(),
-                2
+                Connection.TRANSACTION_READ_COMMITTED
         );
     }
 
-    public List<SpendJson> findSpendByUsername(String username) {
+    public Optional<List<SpendJson>> findSpendByUsername(String username) {
         return transaction(
                 connection -> {
-                    return new SpendDaoJdbc(connection).findAllByUsername(username).stream()
+                    return Optional.of(new SpendDaoJdbc(connection).findAllByUsername(username).stream()
                             .map(SpendJson::fromEntity)
-                            .collect(Collectors.toList());
+                            .collect(Collectors.toList()));
                 },
                 CFG.spendJdbcUrl(),
-                2
+                Connection.TRANSACTION_READ_COMMITTED
         );
     }
 }
