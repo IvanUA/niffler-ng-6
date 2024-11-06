@@ -1,13 +1,14 @@
 package guru.qa.niffler.data.dao.impl;
 
+import guru.qa.niffler.config.Config;
 import guru.qa.niffler.data.dao.CategoryDao;
 import guru.qa.niffler.data.entity.spend.CategoryEntity;
 import guru.qa.niffler.data.mapper.CategoryEntityRowMapper;
+import guru.qa.niffler.data.template.DataSources;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 
-import javax.sql.DataSource;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.util.List;
@@ -16,15 +17,11 @@ import java.util.UUID;
 
 public class CategoryDaoSpringJdbc implements CategoryDao {
 
-    private final DataSource dataSource;
-
-    public CategoryDaoSpringJdbc(DataSource dataSource) {
-        this.dataSource = dataSource;
-    }
+    private static final Config CFG = Config.getInstance();
 
     @Override
     public CategoryEntity create(CategoryEntity category) {
-        JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
+        JdbcTemplate jdbcTemplate = new JdbcTemplate(DataSources.dataSource(CFG.spendJdbcUrl()));
         KeyHolder kh = new GeneratedKeyHolder();
         jdbcTemplate.update(con -> {
             PreparedStatement ps = con.prepareStatement(
@@ -45,7 +42,7 @@ public class CategoryDaoSpringJdbc implements CategoryDao {
 
     @Override
     public CategoryEntity update(CategoryEntity category) {
-        JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
+        JdbcTemplate jdbcTemplate = new JdbcTemplate(DataSources.dataSource(CFG.spendJdbcUrl()));
         jdbcTemplate.update(con -> {
             PreparedStatement ps = con.prepareStatement(
                     "UPDATE category SET username = ?, name = ?, archived = ? WHERE id = ?"
@@ -61,7 +58,7 @@ public class CategoryDaoSpringJdbc implements CategoryDao {
 
     @Override
     public List<CategoryEntity> findAll() {
-        JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
+        JdbcTemplate jdbcTemplate = new JdbcTemplate(DataSources.dataSource(CFG.spendJdbcUrl()));
         return jdbcTemplate.query(
                 "SELECT * FROM category",
                 CategoryEntityRowMapper.instance
@@ -70,7 +67,7 @@ public class CategoryDaoSpringJdbc implements CategoryDao {
 
     @Override
     public Optional<CategoryEntity> findCategoryById(UUID id) {
-        JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
+        JdbcTemplate jdbcTemplate = new JdbcTemplate(DataSources.dataSource(CFG.spendJdbcUrl()));
         return Optional.ofNullable(
                 jdbcTemplate.queryForObject(
                         "SELECT * FROM category WHERE id = ?",
@@ -82,7 +79,7 @@ public class CategoryDaoSpringJdbc implements CategoryDao {
 
     @Override
     public Optional<CategoryEntity> findCategoryByUsernameAndCategoryName(String username, String categoryName) {
-        JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
+        JdbcTemplate jdbcTemplate = new JdbcTemplate(DataSources.dataSource(CFG.spendJdbcUrl()));
         return Optional.ofNullable(
                 jdbcTemplate.queryForObject(
                         "SELECT * FROM category WHERE username = ? AND name = ?",
@@ -95,7 +92,7 @@ public class CategoryDaoSpringJdbc implements CategoryDao {
 
     @Override
     public List<CategoryEntity> findAllByUsername(String username) {
-        JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
+        JdbcTemplate jdbcTemplate = new JdbcTemplate(DataSources.dataSource(CFG.spendJdbcUrl()));
         return jdbcTemplate.query(
                 "SELECT * FROM category WHERE username = ?",
                 CategoryEntityRowMapper.instance,
@@ -105,7 +102,7 @@ public class CategoryDaoSpringJdbc implements CategoryDao {
 
     @Override
     public void deleteCategory(CategoryEntity category) {
-        JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
+        JdbcTemplate jdbcTemplate = new JdbcTemplate(DataSources.dataSource(CFG.spendJdbcUrl()));
         jdbcTemplate.update(
                 "DELETE FROM category WHERE id = ?",
                 category.getId()
