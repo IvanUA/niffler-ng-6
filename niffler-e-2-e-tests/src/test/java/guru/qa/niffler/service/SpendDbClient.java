@@ -11,7 +11,6 @@ import guru.qa.niffler.model.SpendJson;
 
 import java.sql.Connection;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static guru.qa.niffler.data.Databases.dataSource;
@@ -65,31 +64,28 @@ public class SpendDbClient {
         );
     }
 
-    public Optional<List<SpendJson>> findSpendingByUsername(String username) {
+    public List<SpendJson> findSpendingByUsername(String username) {
         return transaction(
                 connection -> {
-                    Optional<List<SpendEntity>> spendEntities = new SpendDaoJdbc(connection)
-                            .findAllByUsername(username);
-                    return spendEntities.map(spending ->
-                            spending.stream()
-                                    .map(SpendJson::fromEntity)
-                                    .collect(Collectors.toList())
-                    );
+                    return new SpendDaoJdbc(connection)
+                            .findAllByUsername(username)
+                            .stream()
+                            .map(SpendJson::fromEntity)
+                            .collect(Collectors.toList());
                 },
                 CFG.spendJdbcUrl(),
                 Connection.TRANSACTION_READ_COMMITTED
         );
     }
 
-    public Optional<List<SpendJson>> findAllSpending() {
+    public List<SpendJson> findAllSpending() {
 
-        Optional<List<SpendEntity>> allSpending = new SpendDaoSpringJdbc(dataSource(CFG.spendJdbcUrl()))
+        List<SpendEntity> allSpending = new SpendDaoSpringJdbc(dataSource(CFG.spendJdbcUrl()))
                 .findAll();
 
-        return allSpending.map(spending ->
-                spending.stream()
-                        .map(SpendJson::fromEntity)
-                        .toList()
-        );
+        return allSpending.stream()
+                .map(SpendJson::fromEntity)
+                .collect(Collectors.toList());
+
     }
 }

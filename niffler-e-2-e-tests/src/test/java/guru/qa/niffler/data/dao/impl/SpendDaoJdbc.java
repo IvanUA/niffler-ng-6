@@ -51,7 +51,7 @@ public class SpendDaoJdbc implements SpendDao {
     }
 
     @Override
-    public Optional<List<SpendEntity>> findAll() {
+    public List<SpendEntity> findAll() {
         try (PreparedStatement ps = connection.prepareStatement(
                 "SELECT * FROM spend"
         )) {
@@ -73,7 +73,7 @@ public class SpendDaoJdbc implements SpendDao {
                     se.setCategory(ce);
                     seList.add(se);
                 }
-                return Optional.of(seList);
+                return seList;
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -111,7 +111,7 @@ public class SpendDaoJdbc implements SpendDao {
     }
 
     @Override
-    public Optional<List<SpendEntity>> findAllByUsername(String username) {
+    public List<SpendEntity> findAllByUsername(String username) {
         try (PreparedStatement ps = connection.prepareStatement(
                 "SELECT * FROM spend WHERE username = ?"
         )) {
@@ -134,7 +134,7 @@ public class SpendDaoJdbc implements SpendDao {
                     se.setCategory(ce);
                     seList.add(se);
                 }
-                return Optional.of(seList);
+                return seList;
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);

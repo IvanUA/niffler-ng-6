@@ -120,7 +120,7 @@ public class AuthUserDaoJdbc implements AuthUserDao {
     }
 
     @Override
-    public Optional<List<AuthUserEntity>> findAll() {
+    public List<AuthUserEntity> findAll() {
         try (PreparedStatement ps = connection.prepareStatement(
                 "SELECT * FROM \"user\""
         )) {
@@ -139,7 +139,7 @@ public class AuthUserDaoJdbc implements AuthUserDao {
                     ue.setCredentialsNonExpired(rs.getBoolean("credentials_non_expired"));
                     aueList.add(ue);
                 }
-                return Optional.of(aueList);
+                return aueList;
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);

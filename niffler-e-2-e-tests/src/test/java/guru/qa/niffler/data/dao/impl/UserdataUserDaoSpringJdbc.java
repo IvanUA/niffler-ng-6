@@ -48,13 +48,12 @@ public class UserdataUserDaoSpringJdbc implements UserdataUserDao {
     }
 
     @Override
-    public Optional<List<UserEntity>> findAll() {
+    public List<UserEntity> findAll() {
         JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-        return Optional.of(
-                jdbcTemplate.query(
-                        "SELECT * FROM \"user\"",
-                        UserdataUserEntityRowMapper.instance
-                )
+        return jdbcTemplate.query(
+                "SELECT * FROM \"user\"",
+                UserdataUserEntityRowMapper.instance
+
         );
     }
 
@@ -72,11 +71,22 @@ public class UserdataUserDaoSpringJdbc implements UserdataUserDao {
 
     @Override
     public Optional<UserEntity> findByUsername(String username) {
-        return Optional.empty();
+        JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
+        return Optional.ofNullable(
+                jdbcTemplate.queryForObject(
+                        "SELECT * FROM \"user\" WHERE username = ?",
+                        UserdataUserEntityRowMapper.instance,
+                        username
+                )
+        );
     }
 
     @Override
     public void delete(UserEntity user) {
-
+        JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
+        jdbcTemplate.update(
+                "DELETE FROM category WHERE id = ?",
+                user.getId()
+        );
     }
 }

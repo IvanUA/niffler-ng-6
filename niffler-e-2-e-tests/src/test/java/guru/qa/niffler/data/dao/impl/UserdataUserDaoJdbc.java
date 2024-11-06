@@ -54,7 +54,7 @@ public class UserdataUserDaoJdbc implements UserdataUserDao {
     }
 
     @Override
-    public Optional<List<UserEntity>> findAll() {
+    public List<UserEntity> findAll() {
         try (PreparedStatement ps = connection.prepareStatement(
                 "SELECT * FROM \"user\""
         )) {
@@ -74,7 +74,7 @@ public class UserdataUserDaoJdbc implements UserdataUserDao {
                     ue.setPhotoSmall(rs.getBytes("photo_small"));
                     ueList.add(ue);
                 }
-                return Optional.of(ueList);
+                return ueList;
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);

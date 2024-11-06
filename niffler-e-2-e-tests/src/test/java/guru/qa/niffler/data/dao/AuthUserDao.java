@@ -10,7 +10,7 @@ public interface AuthUserDao {
 
     AuthUserEntity createUser(AuthUserEntity user);
 
-    Optional<List<AuthUserEntity>> findAll();
+    List<AuthUserEntity> findAll();
 
     Optional<AuthUserEntity> findById(UUID id);
 

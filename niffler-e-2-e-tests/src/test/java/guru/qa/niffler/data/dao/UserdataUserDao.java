@@ -10,7 +10,7 @@ public interface UserdataUserDao {
 
     UserEntity createUser(UserEntity user);
 
-    Optional<List<UserEntity>> findAll();
+    List<UserEntity> findAll();
 
     Optional<UserEntity> findById(UUID id);
 

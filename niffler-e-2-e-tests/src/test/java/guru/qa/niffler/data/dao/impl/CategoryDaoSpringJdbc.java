@@ -60,13 +60,11 @@ public class CategoryDaoSpringJdbc implements CategoryDao {
     }
 
     @Override
-    public Optional<List<CategoryEntity>> findAll() {
+    public List<CategoryEntity> findAll() {
         JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-        return Optional.of(
-                jdbcTemplate.query(
-                        "SELECT * FROM category",
-                        CategoryEntityRowMapper.instance
-                )
+        return jdbcTemplate.query(
+                "SELECT * FROM category",
+                CategoryEntityRowMapper.instance
         );
     }
 
@@ -96,14 +94,12 @@ public class CategoryDaoSpringJdbc implements CategoryDao {
     }
 
     @Override
-    public Optional<List<CategoryEntity>> findAllByUsername(String username) {
+    public List<CategoryEntity> findAllByUsername(String username) {
         JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-        return Optional.of(
-                jdbcTemplate.query(
-                        "SELECT * FROM category WHERE username = ?",
-                        CategoryEntityRowMapper.instance,
-                        username
-                )
+        return jdbcTemplate.query(
+                "SELECT * FROM category WHERE username = ?",
+                CategoryEntityRowMapper.instance,
+                username
         );
     }
 
